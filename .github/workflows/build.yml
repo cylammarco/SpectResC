@@ -33,4 +33,5 @@ jobs:
           python -m pip install --upgrade setuptools wheel
           python -m pip install --upgrade flake8 pytest pytest-cov coverage 
           python -m pip install -r requirements.txt
+          python setup.py build
           python -m pip install -e .
