@@ -1,0 +1,29 @@
+name: Build and Test
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
+        include:
+          - os: macos-latest
+            python-version: "3.10"
+            env: PYTHON="python3.9" CC="clang" CXX="clang++"
+          - os: ubuntu-latest
+            python-version: "3.10"
+            env: PYTHON="python3.9" CC="gcc" CXX="g++"
+          - os: windows-latest
+            python-version: "3.10"
+            env: PYTHON="C:\\Python310\\python.exe" CC="mingw64-gcc" CXX="mingw64-g++"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2

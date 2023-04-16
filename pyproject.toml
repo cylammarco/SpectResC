@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=42", "wheel", "cffi>=1.0"]
+build-backend = "setuptools.build_meta"
+
+[toolset.cffi]
+extra_compile_args = ["-std=c99"]
+extra_link_args = []
+
+[toolset.build]
+# Set compiler flags
+cflags = ['-O3', '-fPIC', '-shared']
+ldflags = []
+
+[toolset.macos]
+# Set MacOS specific options
+cflags = []
+ldflags = []
+
+[toolset.linux]
+# Set Linux specific options
+cflags = []
+ldflags = []
+
+[toolset.windows]
+# Set Windows specific options
+cflags = []
+ldflags = []
