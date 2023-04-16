@@ -26,7 +26,6 @@ static PyObject *spectres(PyObject *self, PyObject *args)
 {
 
     PyObject *new_wavs_obj, *spec_wavs_obj, *spec_fluxes_obj, *spec_errs_obj;
-    PyObject *verbose_obj;
     double fill = 0.0;
     int verbose = 0;
 
@@ -142,7 +141,6 @@ static PyObject *spectres(PyObject *self, PyObject *args)
             double spec_widths_sum = 0.0;
             double e_wid_sum = 0.0;
             double old_wid_sum = 0.0;
-            int f_widths_length = stop - start + 1;
             for (int j = start; j <= stop; j++)
             {
                 f_widths_sum += spec_widths[j] * spec_fluxes[j];

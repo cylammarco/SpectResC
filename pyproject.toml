@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=42", "wheel", "cffi>=1.0"]
+requires = ["setuptools>=42", "wheel", "cffi>=1.0", "numpy"]
 build-backend = "setuptools.build_meta"
 
 [toolset.cffi]
