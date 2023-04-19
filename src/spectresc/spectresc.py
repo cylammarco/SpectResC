@@ -83,22 +83,3 @@ def spectres(
     )
 
     return new_fluxes, new_fluxes_err
-
-    """
-    # Convert output arrays to NumPy arrays
-    new_fluxes = np.zeros_like(new_wavs)
-    ctypes.memmove(
-        new_fluxes.ctypes.data, new_wavs.ctypes.data, new_fluxes.nbytes
-    )
-
-    if spec_errs is not None:
-        new_fluxes_err = np.zeros_like(new_wavs)
-        ctypes.memmove(
-            new_fluxes_err.ctypes.data,
-            new_wavs.ctypes.data,
-            new_fluxes_err.nbytes,
-        )
-        return new_fluxes, new_fluxes_err
-    else:
-        return new_fluxes
-    """

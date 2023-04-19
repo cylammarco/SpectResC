@@ -25,7 +25,8 @@ double *make_bins(double *wavs, int wavs_len)
 static PyObject *spectres(PyObject *self, PyObject *args)
 {
 
-    PyObject *new_wavs_obj, *spec_wavs_obj, *spec_fluxes_obj, *spec_errs_obj;
+    PyObject *new_wavs_obj, *spec_wavs_obj, *spec_fluxes_obj;
+    PyObject *spec_errs_obj = NULL;
     double fill = 0.0;
     int verbose = 0;
 
@@ -41,8 +42,12 @@ static PyObject *spectres(PyObject *self, PyObject *args)
     PyObject *new_wavs_array = PyArray_FROM_OTF(new_wavs_obj, NPY_DOUBLE, NPY_IN_ARRAY);
     PyObject *spec_wavs_array = PyArray_FROM_OTF(spec_wavs_obj, NPY_DOUBLE, NPY_IN_ARRAY);
     PyObject *spec_fluxes_array = PyArray_FROM_OTF(spec_fluxes_obj, NPY_DOUBLE, NPY_IN_ARRAY);
-    PyObject *spec_errs_array = PyArray_FROM_OTF(spec_errs_obj, NPY_DOUBLE, NPY_IN_ARRAY);
 
+    PyObject *spec_errs_array = NULL;
+    if (spec_errs_obj != NULL)
+    {
+        PyObject *spec_errs_array = PyArray_FROM_OTF(spec_errs_obj, NPY_DOUBLE, NPY_IN_ARRAY);
+    }
     // Get the length of the input arrays
     int new_wavs_len = (int)PyArray_DIM(new_wavs_array, 0);
     // printf("\nSpectResC: new_wavs have lengths %d.", new_wavs_len);
@@ -54,8 +59,11 @@ static PyObject *spectres(PyObject *self, PyObject *args)
     double *new_wavs = (double *)PyArray_DATA(new_wavs_array);
     double *spec_wavs = (double *)PyArray_DATA(spec_wavs_array);
     double *spec_fluxes = (double *)PyArray_DATA(spec_fluxes_array);
-    double *spec_errs = (double *)PyArray_DATA(spec_errs_array);
-
+    double *spec_errs = NULL;
+    if (spec_errs_array != NULL)
+    {
+        double *spec_errs = (double *)PyArray_DATA(spec_errs_array);
+    }
     // for (int i = 0; i < spec_wavs_len; i++)
     //{
     //     printf("\nspec_wavs: %f", spec_wavs[i]);
@@ -72,7 +80,11 @@ static PyObject *spectres(PyObject *self, PyObject *args)
 
     // Create empty arrays for populating resampled flux and error
     double *new_fluxes = (double *)malloc(sizeof(double) * new_wavs_len);
-    double *new_errs = (double *)malloc(sizeof(double) * new_wavs_len);
+    double *new_errs = NULL;
+    if (spec_errs_array != NULL)
+    {
+        double *new_errs = (double *)malloc(sizeof(double) * new_wavs_len);
+    }
 
     for (int i = 0; i < spec_wavs_len; i++)
     {
@@ -92,8 +104,10 @@ static PyObject *spectres(PyObject *self, PyObject *args)
         {
             new_fluxes[i] = fill;
             // printf("\nInside stop == start = %i: %f", i, new_fluxes[i]);
-            new_errs[i] = fill;
-
+            if (spec_errs_array != NULL)
+            {
+                new_errs[i] = fill;
+            }
             if ((i == 0 || i == new_wavs_len - 1) && verbose && !warned)
             {
                 warned = 1;
@@ -116,13 +130,9 @@ static PyObject *spectres(PyObject *self, PyObject *args)
         {
             new_fluxes[i] = spec_fluxes[start];
             // printf("\nInside stop == start = %i: %f", i, new_fluxes[i]);
-            if (spec_errs != NULL)
+            if (spec_errs_array != NULL)
             {
                 new_errs[i] = spec_errs[start];
-            }
-            else
-            {
-                new_errs[i] = fill;
             }
         }
         else
@@ -150,11 +160,6 @@ static PyObject *spectres(PyObject *self, PyObject *args)
                     e_wid_sum += pow(spec_widths[j] * spec_errs[j], 2);
                     old_wid_sum += spec_widths[j];
                 }
-                else
-                {
-                    e_wid_sum += 0.0;
-                    old_wid_sum += spec_widths[j];
-                }
             }
 
             new_fluxes[i] = f_widths_sum / spec_widths_sum;
@@ -179,17 +184,34 @@ static PyObject *spectres(PyObject *self, PyObject *args)
     // Create NumPy arrays to return the data to Python
     npy_intp dims[1] = {new_wavs_len};
     PyObject *new_fluxes_array = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, new_fluxes);
-    PyObject *new_errs_array = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, new_errs);
+    PyArray_ENABLEFLAGS((PyArrayObject *)new_fluxes_array, NPY_ARRAY_OWNDATA);
 
     // Set the base object for the arrays to NULL to indicate that the arrays are not owned by Python
-    PyArray_ENABLEFLAGS((PyArrayObject *)new_fluxes_array, NPY_ARRAY_OWNDATA);
-    PyArray_ENABLEFLAGS((PyArrayObject *)new_errs_array, NPY_ARRAY_OWNDATA);
+    PyObject *new_errs_array = NULL;
+    if (spec_errs_obj != NULL)
+    {
+        new_errs_array = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, new_errs);
+        PyArray_ENABLEFLAGS((PyArrayObject *)new_errs_array, NPY_ARRAY_OWNDATA);
+    }
+
+    free(new_fluxes);
+    free(new_errs);
 
     // Create a tuple to return the arrays as a pair
-    PyObject *result = PyTuple_New(2);
+    PyObject *result = NULL;
+    if (spec_errs_obj != NULL)
+    {
+        result = PyTuple_New(2);
+    }
+    else
+    {
+        result = PyTuple_New(1);
+    }
     PyTuple_SetItem(result, 0, new_fluxes_array);
-    PyTuple_SetItem(result, 1, new_errs_array);
-
+    if (spec_errs_obj != NULL)
+    {
+        PyTuple_SetItem(result, 1, new_errs_array);
+    }
     return result;
 }
 
