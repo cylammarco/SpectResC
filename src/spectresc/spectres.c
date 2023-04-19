@@ -42,12 +42,13 @@ static PyObject *spectres(PyObject *self, PyObject *args)
     PyObject *new_wavs_array = PyArray_FROM_OTF(new_wavs_obj, NPY_DOUBLE, NPY_IN_ARRAY);
     PyObject *spec_wavs_array = PyArray_FROM_OTF(spec_wavs_obj, NPY_DOUBLE, NPY_IN_ARRAY);
     PyObject *spec_fluxes_array = PyArray_FROM_OTF(spec_fluxes_obj, NPY_DOUBLE, NPY_IN_ARRAY);
-
     PyObject *spec_errs_array = NULL;
     if (spec_errs_obj != NULL)
     {
-        PyObject *spec_errs_array = PyArray_FROM_OTF(spec_errs_obj, NPY_DOUBLE, NPY_IN_ARRAY);
+        spec_errs_array = PyArray_FROM_OTF(spec_errs_obj, NPY_DOUBLE, NPY_IN_ARRAY);
+        // printf("spec_errs_obj is not NULL.");
     }
+
     // Get the length of the input arrays
     int new_wavs_len = (int)PyArray_DIM(new_wavs_array, 0);
     // printf("\nSpectResC: new_wavs have lengths %d.", new_wavs_len);
@@ -60,36 +61,35 @@ static PyObject *spectres(PyObject *self, PyObject *args)
     double *spec_wavs = (double *)PyArray_DATA(spec_wavs_array);
     double *spec_fluxes = (double *)PyArray_DATA(spec_fluxes_array);
     double *spec_errs = NULL;
+    double *new_errs = NULL;
     if (spec_errs_array != NULL)
     {
-        double *spec_errs = (double *)PyArray_DATA(spec_errs_array);
+        // printf("spec_errs_array is not NULL.");
+        spec_errs = (double *)PyArray_DATA(spec_errs_array);
+        new_errs = (double *)malloc(sizeof(double) * new_wavs_len);
     }
     // for (int i = 0; i < spec_wavs_len; i++)
     //{
-    //     printf("\nspec_wavs: %f", spec_wavs[i]);
-    //     printf("\nspec_fluxes: %f", spec_fluxes[i]);
-    //     printf("\nspec_errs: %f", spec_errs[i]);
+    //      printf("\nspec_wavs: %f", spec_wavs[i]);
+    //      printf("\nspec_fluxes: %f", spec_fluxes[i]);
+    //     if (spec_errs_array != NULL) {
+    //         printf("\nspec_errs: %f", spec_errs[i]);
+    //     }
     // }
     //
-    // printf("\nfill = %f, ", fill);
-    // printf("\nverbose = %i, ", verbose);
+    //  printf("\nfill = %f, ", fill);
+    //  printf("\nverbose = %i, ", verbose);
 
     double *spec_edges, *spec_widths, *new_edges, *new_widths;
     spec_edges = make_bins(spec_wavs, spec_wavs_len);
     spec_widths = (double *)malloc(sizeof(double) * spec_wavs_len);
-
-    // Create empty arrays for populating resampled flux and error
-    double *new_fluxes = (double *)malloc(sizeof(double) * new_wavs_len);
-    double *new_errs = NULL;
-    if (spec_errs_array != NULL)
-    {
-        double *new_errs = (double *)malloc(sizeof(double) * new_wavs_len);
-    }
-
     for (int i = 0; i < spec_wavs_len; i++)
     {
         spec_widths[i] = spec_edges[i + 1] - spec_edges[i];
     }
+
+    // Create empty arrays for populating resampled flux and error
+    double *new_fluxes = (double *)malloc(sizeof(double) * new_wavs_len);
     new_edges = make_bins(new_wavs, new_wavs_len);
     new_widths = (double *)malloc(sizeof(double) * new_wavs_len);
     for (int i = 0; i < new_wavs_len; i++)
@@ -104,14 +104,15 @@ static PyObject *spectres(PyObject *self, PyObject *args)
         {
             new_fluxes[i] = fill;
             // printf("\nInside stop == start = %i: %f", i, new_fluxes[i]);
-            if (spec_errs_array != NULL)
+            if (spec_errs != NULL)
             {
                 new_errs[i] = fill;
+                // printf("\nWhen new wavelength range is too large i = %i, new_errs[i] = %f", i, new_errs[i]);
             }
             if ((i == 0 || i == new_wavs_len - 1) && verbose && !warned)
             {
                 warned = 1;
-                printf("\nSpectres: new_wavs contains values outside the range in spec_wavs, new_fluxes and new_errs will be filled with the value set in the 'fill' keyword argument. \n");
+                // printf("\nSpectres: new_wavs contains values outside the range in spec_wavs, new_fluxes and new_errs will be filled with the value set in the 'fill' keyword argument. \n");
             }
             continue;
         }
@@ -130,9 +131,10 @@ static PyObject *spectres(PyObject *self, PyObject *args)
         {
             new_fluxes[i] = spec_fluxes[start];
             // printf("\nInside stop == start = %i: %f", i, new_fluxes[i]);
-            if (spec_errs_array != NULL)
+            if (spec_errs != NULL)
             {
                 new_errs[i] = spec_errs[start];
+                // printf("\nInside stop == start = i = %i, new_errs[i] = %f", i, new_errs[i]);
             }
         }
         else
@@ -150,7 +152,6 @@ static PyObject *spectres(PyObject *self, PyObject *args)
             double f_widths_sum = 0.0;
             double spec_widths_sum = 0.0;
             double e_wid_sum = 0.0;
-            double old_wid_sum = 0.0;
             for (int j = start; j <= stop; j++)
             {
                 f_widths_sum += spec_widths[j] * spec_fluxes[j];
@@ -158,7 +159,6 @@ static PyObject *spectres(PyObject *self, PyObject *args)
                 if (spec_errs != NULL)
                 {
                     e_wid_sum += pow(spec_widths[j] * spec_errs[j], 2);
-                    old_wid_sum += spec_widths[j];
                 }
             }
 
@@ -168,6 +168,7 @@ static PyObject *spectres(PyObject *self, PyObject *args)
             if (spec_errs != NULL)
             {
                 new_errs[i] = sqrt(e_wid_sum) / spec_widths_sum;
+                // printf("\nIn the else case with i = %i, new_errs[i] = %f", i, new_errs[i]);
             }
 
             // Put back the old bin widths to their initial values
@@ -175,6 +176,7 @@ static PyObject *spectres(PyObject *self, PyObject *args)
             spec_widths[stop] /= end_factor;
         }
     }
+
     // Free the memory
     free(spec_edges);
     free(spec_widths);
@@ -193,9 +195,6 @@ static PyObject *spectres(PyObject *self, PyObject *args)
         new_errs_array = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, new_errs);
         PyArray_ENABLEFLAGS((PyArrayObject *)new_errs_array, NPY_ARRAY_OWNDATA);
     }
-
-    free(new_fluxes);
-    free(new_errs);
 
     // Create a tuple to return the arrays as a pair
     PyObject *result = NULL;
