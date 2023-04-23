@@ -8,17 +8,17 @@ extra_link_args = []
 
 [toolset.build]
 # Set compiler flags
-cflags = ['-O3', '-fPIC', '-shared']
+cflags = []
 ldflags = []
 
 [toolset.macos]
 # Set MacOS specific options
-cflags = []
+cflags = ['-O3', '-fPIC', '-shared']
 ldflags = []
 
 [toolset.linux]
 # Set Linux specific options
-cflags = []
+cflags = ['-O3', '-fPIC', '-shared']
 ldflags = []
 
 [toolset.windows]
