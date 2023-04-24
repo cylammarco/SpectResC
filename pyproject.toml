@@ -25,3 +25,6 @@ ldflags = []
 # Set Windows specific options
 cflags = []
 ldflags = []
+
+[tool.coverage.run]
+relative_files = true
