@@ -1,0 +1,14 @@
+{
+    "description": "SpectResC is a Python module based on the original work SpectRes, written with C Extension to efficiently resample spectra and associated uncertainties onto an arbitrary wavelength grid.",
+    "license": "GPL-3.0-or-later",
+    "title": "SpectRes in C",
+    "upload_type": "software",
+    "creators": [
+        {
+            "affiliation": "Tel Aviv University",
+            "name": "Lam, Marco C",
+            "orcid": "0000-0002-9347-2298"
+        }
+    ],
+    "access_right": "open"
+}
