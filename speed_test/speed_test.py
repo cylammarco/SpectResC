@@ -1,5 +1,7 @@
+from timeit import Timer
+
+from matplotlib import pyplot as plt
 import numpy as np
-from timeit import timeit, Timer
 
 from spectresc import spectres as sc
 from spectres import spectres_numba as sn
@@ -58,9 +60,17 @@ def call_spectresc_err(size_i, size_o):
 
 
 if __name__ == "__main__":
-    insizes = [100, 1000, 10000]
-    outsizes = [100, 1000, 10000]
+    # 256, 512, 1024, 2048, 4096
+    insizes = 2 ** np.arange(8, 13)
+    outsizes = 2 ** np.arange(8, 13)
     repeats = 1000
+
+    sp_time_array = np.zeros((len(insizes), len(outsizes)))
+    sp_time_array_with_err = np.zeros_like(sp_time_array)
+    sn_time_array = np.zeros_like(sp_time_array)
+    sn_time_array_with_err = np.zeros_like(sp_time_array)
+    sc_time_array = np.zeros_like(sp_time_array)
+    sc_time_array_with_err = np.zeros_like(sp_time_array)
 
     _ = call_spectres(10, 10)
     _ = call_spectresn(10, 10)
@@ -70,12 +80,12 @@ if __name__ == "__main__":
     _ = call_spectresn_err(10, 10)
     _ = call_spectresc_err(10, 10)
 
-    for size_o in outsizes:
-        for size_i in insizes:
+    for o, size_o in enumerate(outsizes):
+        for i, size_i in enumerate(insizes):
             print("+" * 80 + "\n")
             print(
                 f"Running SpectRes with {size_i} input wavelengths and"
-                f" {size_o} output wavelengths for {repeats} times"
+                f" {size_o} output wavelengths for 100 x {repeats} times"
             )
             timer = Timer(
                 stmt=f"call_spectres({size_i}, {size_o})",
@@ -84,7 +94,7 @@ if __name__ == "__main__":
                     " import call_spectres"
                 ),
             )
-            time = timer.timeit(repeats)
+            time = np.median(timer.repeat(100, repeats))
             print(
                 (
                     f"Total runtime = {time} s, time per call ="
@@ -99,7 +109,7 @@ if __name__ == "__main__":
             print(
                 "Numba: Running SpectRes with numba with"
                 f" {size_i} input wavelengths and {size_o} output wavelengths"
-                f" for {repeats} times"
+                f" for 100 x {repeats} times"
             )
             timer = Timer(
                 stmt=f"call_spectresn({size_i}, {size_o})",
@@ -108,7 +118,7 @@ if __name__ == "__main__":
                     " import call_spectresn"
                 ),
             )
-            time_n = timer.timeit(repeats)
+            time_n = np.median(timer.repeat(100, repeats))
 
             print(
                 (
@@ -122,7 +132,7 @@ if __name__ == "__main__":
             print(
                 f"C extension: Running SpectResC with {size_i} input"
                 f" wavelengths and {size_o} output wavelengths for"
-                f" {repeats} times"
+                f" 100 x {repeats} times"
             )
             timer = Timer(
                 stmt=f"call_spectresc({size_i}, {size_o})",
@@ -131,7 +141,7 @@ if __name__ == "__main__":
                     " import call_spectresc"
                 ),
             )
-            time_c = timer.timeit(repeats)
+            time_c = np.median(timer.repeat(100, repeats))
 
             print(
                 (
@@ -142,12 +152,20 @@ if __name__ == "__main__":
             print(f"C extension: Speedup = {time / time_c} times")
             print("\n" + "+" * 80)
 
-    for size_o in outsizes:
-        for size_i in insizes:
+            sp_time_array[o][i] = time
+            sn_time_array[o][i] = time_n
+            sc_time_array[o][i] = time_c
+
+    np.save("sp_time_array.npy", sp_time_array)
+    np.save("sn_time_array.npy", sn_time_array)
+    np.save("sc_time_array.npy", sc_time_array)
+
+    for o, size_o in enumerate(outsizes):
+        for i, size_i in enumerate(insizes):
             print("+" * 80 + "\n")
             print(
                 f"Running SpectRes with {size_i} input wavelengths & errors"
-                f" and {size_o} output wavelengths for {repeats} times"
+                f" and {size_o} output wavelengths for 100 x {repeats} times"
             )
             timer = Timer(
                 stmt=f"call_spectres_err({size_i}, {size_o})",
@@ -156,7 +174,7 @@ if __name__ == "__main__":
                     " import call_spectres_err"
                 ),
             )
-            time = timer.timeit(repeats)
+            time = np.median(timer.repeat(100, repeats))
             print(
                 (
                     f"Total runtime = {time} s, time per call ="
@@ -171,7 +189,7 @@ if __name__ == "__main__":
             print(
                 f"Numba: Running SpectRes with numba with {size_i} input"
                 f" wavelengths & errors and {size_o} output wavelengths for"
-                f" {repeats} times"
+                f" 100 x {repeats} times"
             )
             timer = Timer(
                 stmt=f"call_spectresn_err({size_i}, {size_o})",
@@ -180,7 +198,7 @@ if __name__ == "__main__":
                     " import call_spectresn_err"
                 ),
             )
-            time_n = timer.timeit(repeats)
+            time_n = np.median(timer.repeat(100, repeats))
 
             print(
                 (
@@ -194,7 +212,7 @@ if __name__ == "__main__":
             print(
                 f"C extension: Running SpectResC with {size_i} input"
                 f" wavelengths & errors and {size_o} output wavelengths for"
-                f" {repeats} times"
+                f" 100 x {repeats} times"
             )
             timer = Timer(
                 stmt=f"call_spectresc_err({size_i}, {size_o})",
@@ -203,7 +221,7 @@ if __name__ == "__main__":
                     " import call_spectresc_err"
                 ),
             )
-            time_c = timer.timeit(repeats)
+            time_c = np.median(timer.repeat(100, repeats))
 
             print(
                 (
@@ -213,3 +231,11 @@ if __name__ == "__main__":
             )
             print(f"C extension: Speedup = {time / time_c} times")
             print("\n" + "+" * 80)
+
+            sp_time_array_with_err[o][i] = time
+            sn_time_array_with_err[o][i] = time_n
+            sc_time_array_with_err[o][i] = time_c
+
+    np.save("sp_time_array_with_err.npy", sp_time_array_with_err)
+    np.save("sn_time_array_with_err.npy", sn_time_array_with_err)
+    np.save("sc_time_array_with_err.npy", sc_time_array_with_err)
