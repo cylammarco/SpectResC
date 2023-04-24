@@ -142,13 +142,12 @@ if __name__ == "__main__":
             print(f"C extension: Speedup = {time / time_c} times")
             print("\n" + "+" * 80)
 
-
     for size_o in outsizes:
         for size_i in insizes:
             print("+" * 80 + "\n")
             print(
-                f"Running SpectRes with {size_i} input wavelengths & errors and"
-                f" {size_o} output wavelengths for {repeats} times"
+                f"Running SpectRes with {size_i} input wavelengths & errors"
+                f" and {size_o} output wavelengths for {repeats} times"
             )
             timer = Timer(
                 stmt=f"call_spectres_err({size_i}, {size_o})",
@@ -170,9 +169,9 @@ if __name__ == "__main__":
             # the loop
             call_spectresn(10, 10)
             print(
-                "Numba: Running SpectRes with numba with"
-                f" {size_i} input wavelengths & errors and {size_o} output wavelengths"
-                f" for {repeats} times"
+                f"Numba: Running SpectRes with numba with {size_i} input"
+                f" wavelengths & errors and {size_o} output wavelengths for"
+                f" {repeats} times"
             )
             timer = Timer(
                 stmt=f"call_spectresn_err({size_i}, {size_o})",

@@ -26,8 +26,8 @@ static PyObject *spectres(PyObject *self, PyObject *args, PyObject *kwargs)
 {
 
     PyObject *new_wavs_obj, *spec_wavs_obj, *spec_fluxes_obj, *spec_errs_obj = NULL;
-    double fill = 0.0;
-    int verbose = 0;
+    double fill = NAN;
+    int verbose = 1;
 
     static char *kwlist[] = {"new_wavs", "spec_wavs", "spec_fluxes", "spec_errs", "fill", "verbose", NULL};
 
@@ -95,63 +95,64 @@ static PyObject *spectres(PyObject *self, PyObject *args, PyObject *kwargs)
                 warned = 1;
                 printf("SpectResC: new_wavs contains values outside the range "
                        "in spec_wavs, new_fluxes and new_errs will be filled "
-                       "with the value set in the 'fill' keyword argument.");
-            }
-        }
-
-        while (spec_edges[start + 1] <= new_edges[i])
-        {
-            start += 1;
-        }
-
-        while (spec_edges[stop + 1] < new_edges[i + 1])
-        {
-            stop += 1;
-        }
-
-        if (stop == start)
-        {
-            new_fluxes[i] = spec_fluxes[start];
-            if (spec_errs != NULL)
-            {
-                new_errs[i] = spec_errs[start];
+                       "with the value set in the 'fill' keyword argument.\n");
             }
         }
         else
         {
-            double start_factor = ((spec_edges[start + 1] - new_edges[i]) / (spec_edges[start + 1] - spec_edges[start]));
-            double end_factor = ((new_edges[i + 1] - spec_edges[stop]) / (spec_edges[stop + 1] - spec_edges[stop]));
-
-            spec_widths[start] *= start_factor;
-            spec_widths[stop] *= end_factor;
-
-            // Populate new_fluxes spectrum and uncertainty arrays
-            double f_widths_sum = 0.0;
-            double spec_widths_sum = 0.0;
-            double e_wid_sum = 0.0;
-            for (int j = start; j <= stop; j++)
+            while (spec_edges[start + 1] <= new_edges[i])
             {
-                f_widths_sum += spec_widths[j] * spec_fluxes[j];
-                spec_widths_sum += spec_widths[j];
+                start += 1;
+            }
+
+            while (spec_edges[stop + 1] < new_edges[i + 1])
+            {
+                stop += 1;
+            }
+
+            if (stop == start)
+            {
+                new_fluxes[i] = spec_fluxes[start];
                 if (spec_errs != NULL)
                 {
-                    e_wid_sum += pow(spec_widths[j] * spec_errs[j], 2);
+                    new_errs[i] = spec_errs[start];
                 }
             }
-
-            new_fluxes[i] = f_widths_sum / spec_widths_sum;
-
-            if (spec_errs != NULL)
+            else
             {
-                new_errs[i] = sqrt(e_wid_sum) / spec_widths_sum;
-            }
+                double start_factor = ((spec_edges[start + 1] - new_edges[i]) / (spec_edges[start + 1] - spec_edges[start]));
+                double end_factor = ((new_edges[i + 1] - spec_edges[stop]) / (spec_edges[stop + 1] - spec_edges[stop]));
 
-            // Put back the old bin widths to their initial values
-            spec_widths[start] /= start_factor;
-            spec_widths[stop] /= end_factor;
+                spec_widths[start] *= start_factor;
+                spec_widths[stop] *= end_factor;
+
+                // Populate new_fluxes spectrum and uncertainty arrays
+                double f_widths_sum = 0.0;
+                double spec_widths_sum = 0.0;
+                double e_wid_sum = 0.0;
+                for (int j = start; j <= stop; j++)
+                {
+                    f_widths_sum += spec_widths[j] * spec_fluxes[j];
+                    spec_widths_sum += spec_widths[j];
+                    if (spec_errs != NULL)
+                    {
+                        e_wid_sum += pow(spec_widths[j] * spec_errs[j], 2);
+                    }
+                }
+
+                new_fluxes[i] = f_widths_sum / spec_widths_sum;
+
+                if (spec_errs != NULL)
+                {
+                    new_errs[i] = sqrt(e_wid_sum) / spec_widths_sum;
+                }
+
+                // Put back the old bin widths to their initial values
+                spec_widths[start] /= start_factor;
+                spec_widths[stop] /= end_factor;
+            }
         }
     }
-
     // Create NumPy arrays to return the data to Python
     npy_intp dims[1] = {new_wavs_len};
     PyObject *new_fluxes_array = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, new_fluxes);
