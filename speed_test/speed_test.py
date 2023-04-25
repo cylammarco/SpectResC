@@ -97,7 +97,7 @@ if __name__ == "__main__":
             time = np.median(timer.repeat(100, repeats))
             print(
                 (
-                    f"Total runtime = {time} s, time per call ="
+                    f"Total runtime = {time * 100} s, time per call ="
                     f" {time / repeats} s"
                 ),
             )
@@ -122,7 +122,7 @@ if __name__ == "__main__":
 
             print(
                 (
-                    f"Numba: Total runtime = {time_n} s, time per call = "
+                    f"Numba: Total runtime = {time_n * 100} s, time per call = "
                     f"{time_n / repeats} s"
                 ),
             )
@@ -145,7 +145,7 @@ if __name__ == "__main__":
 
             print(
                 (
-                    f"C extension: Total runtime = {time_c} s, time per call ="
+                    f"C extension: Total runtime = {time_c * 100} s, time per call ="
                     f" {time_c / repeats} s"
                 ),
             )
@@ -177,7 +177,7 @@ if __name__ == "__main__":
             time = np.median(timer.repeat(100, repeats))
             print(
                 (
-                    f"Total runtime = {time} s, time per call ="
+                    f"Total runtime = {time * 100} s, time per call ="
                     f" {time / repeats} s"
                 ),
             )
@@ -202,7 +202,7 @@ if __name__ == "__main__":
 
             print(
                 (
-                    f"Numba: Total runtime = {time_n} s, time per call = "
+                    f"Numba: Total runtime = {time_n * 100} s, time per call = "
                     f"{time_n / repeats} s"
                 ),
             )
@@ -225,7 +225,7 @@ if __name__ == "__main__":
 
             print(
                 (
-                    f"C extension: Total runtime = {time_c} s, time per call ="
+                    f"C extension: Total runtime = {time_c * 100} s, time per call ="
                     f" {time_c / repeats} s"
                 ),
             )
