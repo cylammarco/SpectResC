@@ -7,17 +7,15 @@
 double *make_bins(double *wavs, int wavs_len)
 {
     double *edges = (double *)malloc(sizeof(double) * (wavs_len + 1));
-    double *widths = (double *)malloc(sizeof(double) * wavs_len);
 
     edges[0] = wavs[0] - (wavs[1] - wavs[0]) / 2;
-    widths[wavs_len - 1] = (wavs[wavs_len - 1] - wavs[wavs_len - 2]);
     edges[wavs_len] = wavs[wavs_len - 1] + (wavs[wavs_len - 1] - wavs[wavs_len - 2]) / 2;
 
     for (int i = 1; i < wavs_len; i++)
     {
         edges[i] = (wavs[i] + wavs[i - 1]) / 2;
-        widths[i - 1] = edges[i] - edges[i - 1];
     }
+
     return edges;
 }
 
@@ -153,6 +151,12 @@ static PyObject *spectres(PyObject *self, PyObject *args, PyObject *kwargs)
             }
         }
     }
+
+    // Free the memory
+    free(spec_edges);
+    free(new_edges);
+    free(spec_widths);
+
     // Create NumPy arrays to return the data to Python
     npy_intp dims[1] = {new_wavs_len};
     PyObject *new_fluxes_array = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, new_fluxes);
@@ -160,28 +164,20 @@ static PyObject *spectres(PyObject *self, PyObject *args, PyObject *kwargs)
 
     // Set the base object for the arrays to NULL to indicate that the arrays are not owned by Python
     // and reate a tuple to return the array(s)
-    PyObject *new_errs_array = NULL;
-    PyObject *result = NULL;
     if (spec_errs != NULL)
     {
-        result = PyTuple_New(2);
-        PyTuple_SetItem(result, 0, new_fluxes_array);
+        PyObject *new_errs_array = NULL;
+        PyObject *result_list = PyList_New(0);
+        PyList_Append(result_list, PyArray_Return(new_fluxes_array));
         new_errs_array = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, new_errs);
         PyArray_ENABLEFLAGS((PyArrayObject *)new_errs_array, NPY_ARRAY_OWNDATA);
-        PyTuple_SetItem(result, 1, new_errs_array);
+        PyList_Append(result_list, PyArray_Return(new_errs_array));
+        return result_list;
     }
     else
     {
-        result = PyTuple_New(1);
-        PyTuple_SetItem(result, 0, new_fluxes_array);
+        return new_fluxes_array;
     }
-
-    // Free the memory
-    free(spec_edges);
-    free(new_edges);
-    free(spec_widths);
-
-    return result;
 }
 
 // Define the module methods
