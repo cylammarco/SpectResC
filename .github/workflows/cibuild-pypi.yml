@@ -60,4 +60,4 @@ jobs:
         with:
           user: ${{ secrets.pypi_username }}
           password: ${{ secrets.pypi_password }}
-          repository_url: https://test.pypi.org/legacy/
+          repository_url: https://upload.pypi.org/legacy/

@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+title: spectresc
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Marco C
+    family-names: Lam
+    email: lam@mail.tau.ac.il
+    affiliation: Tel Aviv University
+    orcid: 'https://orcid.org/0000-0002-9347-2298'
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.7863171
+    description: Zenodo
+  - type: article
+    value: "arXiv:1705.05165"
+    description: The ArXiv preprint of the article
+repository-code: 'https://github.com/cylammarco/spectresc'
+url: 'https://pypi.org/project/spectresc/'
+license: GPL-3.0-or-later
