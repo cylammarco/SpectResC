@@ -30,6 +30,7 @@ for j, (p, n, size) in enumerate(
     axs[0].plot(
         insizes,
         p / n,
+        label=f"numba with output size: {size}",
         color=red_gradient[j],
     )
 
@@ -53,7 +54,6 @@ for k, (p_e, n_e, size) in enumerate(
     axs[1].plot(
         insizes,
         p_e / n_e,
-        label=f"numba with output size: {size}",
         color=red_gradient[k],
     )
 
@@ -74,7 +74,6 @@ axs[0].grid()
 axs[1].grid()
 
 axs[0].legend()
-axs[1].legend()
 
 axs[0].xaxis.set_major_formatter(ScalarFormatter(useMathText=False))
 axs[1].xaxis.set_major_formatter(ScalarFormatter(useMathText=False))
@@ -90,8 +89,8 @@ axs[1].xaxis.set_minor_locator(NullLocator())
 axs[0].set_xlim(150, 4250)
 axs[1].set_xlim(150, 4250)
 
-axs[0].set_ylim(0, 250)
-axs[1].set_ylim(0, 250)
+axs[0].set_ylim(0, 400)
+axs[1].set_ylim(0, 400)
 
 axs[1].set_yticklabels([])
 
