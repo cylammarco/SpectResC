@@ -1,0 +1,32 @@
+# get version from setup.py
+{% set data = load_setup_py_data(setup_file='../setup.py', from_recipe_dir=True) %}
+
+package:
+  name: aspired
+  version: {{ data.get('version') }}
+
+source:
+  path: ../
+
+build:
+  noarch: python
+
+requirements:
+  build:
+    - python>=3.7
+    - setuptools
+  run:
+    {% for req in data.get('install_requires', []) %}
+      - {{ req }}
+    {% endfor %}
+
+test:
+ imports:
+   - aspired
+
+about:
+  home: https://github.com/cylammarco/SpectResC
+  license: GPL-3.0-or-later
+  license_file: LICENSE
+  description: SpectResC is a Python module based on the original work SpectRes, written with C Extension to efficiently resample spectra and associated uncertainties onto an arbitrary wavelength grid.
+  summary: SpectResC is an implementation of SpectRes with C-extension in Python.

@@ -10,6 +10,9 @@ setup(
     maintainer="Marco C Lam",
     maintainer_email="lam@mail.tau.ac.il",
     version="1.0.0.rc2",
+    install_requires=[         
+        'numpy',
+    ],
     description="SpectRes in C",
     long_description=Path("README.md").read_text(encoding="utf-8"),
     long_description_content_type="text/markdown",
