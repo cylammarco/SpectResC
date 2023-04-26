@@ -9,7 +9,7 @@ setup(
     name="spectresc",
     maintainer="Marco C Lam",
     maintainer_email="lam@mail.tau.ac.il",
-    version="1.0.0.rc2",
+    version="1.0.1",
     install_requires=[         
         'numpy',
     ],

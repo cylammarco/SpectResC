@@ -9,7 +9,15 @@ source:
   path: ../
 
 build:
-  noarch: python
+  script: python -m pip install . --no-deps -vv
+  python:
+    - 3.7
+    - 3.8
+    - 3.9
+    - 3.10
+    - 3.11
+  target_platform: osx-64, win-64, linux-64
+  target_subdir: "{platform}-{arch}"
 
 requirements:
   build:
