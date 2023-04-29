@@ -22,7 +22,7 @@ jobs:
             env: CC="mingw64-gcc" CXX="mingw64-g++"
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
@@ -38,7 +38,13 @@ jobs:
     - name: Test with pytest
       run: |
         coverage run -m pytest --disable-warnings -p no:warnings test
+    - name: Use Node.js 16.x
+      if: startsWith(matrix.os, 'ubuntu') && endsWith(matrix.python-version, '3.10')
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16.x
     - name: npm install, make test-coverage
+      if: startsWith(matrix.os, 'ubuntu') && endsWith(matrix.python-version, '3.10')
       run: |
         npm install
         make test-coverage
