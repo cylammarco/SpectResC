@@ -2,20 +2,22 @@
 {% set data = load_setup_py_data(setup_file='../setup.py', from_recipe_dir=True) %}
 
 package:
-  name: aspired
+  name: spectresc
   version: {{ data.get('version') }}
 
 source:
-  path: ../
+  git_rev: HEAD
+  git_url: https://github.com/cylammarco/SpectResC.git
+  git_depth: 1
 
 build:
-  script: python -m pip install . --no-deps -vv
+  script: python3 -m pip install . 
   python:
-    - 3.7
-    - 3.8
-    - 3.9
-    - 3.10
-    - 3.11
+    - "3.7"
+    - "3.8"
+    - "3.9"
+    - "3.10"
+    - "3.11"
   target_platform: osx-64, win-64, linux-64
   target_subdir: "{platform}-{arch}"
 
@@ -30,7 +32,7 @@ requirements:
 
 test:
  imports:
-   - aspired
+   - spectresc
 
 about:
   home: https://github.com/cylammarco/SpectResC

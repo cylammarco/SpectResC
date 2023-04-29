@@ -1,7 +1,6 @@
-from matplotlib import pyplot as plt
-from matplotlib.ticker import NullLocator
-from matplotlib.ticker import ScalarFormatter
 import numpy as np
+from matplotlib import pyplot as plt
+from matplotlib.ticker import NullLocator, ScalarFormatter
 
 insizes = 2 ** np.arange(8, 13)
 outsizes = 2 ** np.arange(8, 13)
@@ -24,9 +23,7 @@ blue_gradient = [
 fig, axs = plt.subplots(
     1, 2, figsize=(12, 8), sharex=True, sharey=False, gridspec_kw={"wspace": 0}
 )
-for j, (p, n, size) in enumerate(
-    zip(sp_time_array, sn_time_array, outsizes)
-):
+for j, (p, n, size) in enumerate(zip(sp_time_array, sn_time_array, outsizes)):
     axs[0].plot(
         insizes,
         p / n,
@@ -34,9 +31,7 @@ for j, (p, n, size) in enumerate(
         color=red_gradient[j],
     )
 
-for j, (p, c, size) in enumerate(
-    zip(sp_time_array, sc_time_array, outsizes)
-):
+for j, (p, c, size) in enumerate(zip(sp_time_array, sc_time_array, outsizes)):
     axs[0].plot(
         insizes,
         p / c,
@@ -94,11 +89,11 @@ axs[1].set_ylim(0, 400)
 
 axs[1].set_yticklabels([])
 
-axs[0].set_title('Unit-weighted')
-axs[1].set_title('Error-weighted')
+axs[0].set_title("Unit-weighted")
+axs[1].set_title("Error-weighted")
 
-axs[0].set_ylabel('Performance gain (factor)')
-fig.text(0.5, 0.02, 'Input size of the spectrum', ha='center')
+axs[0].set_ylabel("Performance gain (factor)")
+fig.text(0.5, 0.02, "Input size of the spectrum", ha="center")
 
 plt.tight_layout()
 plt.subplots_adjust(bottom=0.075)

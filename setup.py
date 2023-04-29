@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from setuptools import setup, Extension
 from pathlib import Path
 
 import numpy
+from setuptools import Extension, setup
 
 setup(
     name="spectresc",
     maintainer="Marco C Lam",
     maintainer_email="lam@mail.tau.ac.il",
-    version="1.0.1",
-    install_requires=[         
-        'numpy',
+    version="1.0.2",
+    install_requires=[
+        "numpy",
     ],
     description="SpectRes in C",
     long_description=Path("README.md").read_text(encoding="utf-8"),

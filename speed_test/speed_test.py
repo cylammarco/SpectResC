@@ -1,11 +1,10 @@
 from timeit import Timer
 
-from matplotlib import pyplot as plt
 import numpy as np
-
-from spectresc import spectres as sc
-from spectres import spectres_numba as sn
+from matplotlib import pyplot as plt
 from spectres import spectres as sp
+from spectres import spectres_numba as sn
+from spectresc import spectres as sc
 
 
 def call_spectres(size_i, size_o):

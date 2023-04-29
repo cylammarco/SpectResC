@@ -1,6 +1,6 @@
 import numpy as np
-from spectresc import spectres as sc
 from spectres import spectres as sp
+from spectresc import spectres as sc
 
 
 def test_with_random_arrays():
