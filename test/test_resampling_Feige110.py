@@ -1,6 +1,6 @@
 import os
 
-from matplotlib import pyplot as plt
+# from matplotlib import pyplot as plt
 import numpy as np
 from spectresc import spectres as sc
 
@@ -22,10 +22,10 @@ def test_resample_standard_star():
 
     assert np.isclose(np.nansum(r1), np.nansum(r2))
 
-    plt.figure(figsize=(8, 8))
-    plt.plot(inwaves, influxes, label="Input")
-    plt.plot(outwaves, r1, label="Resampled")
-    plt.plot(outwaves, r2, label="Resampled with uncertainties")
-    plt.ylim(0, 6e-13)
-    plt.legend()
-    plt.savefig(os.path.join(PATH, "fFeige110.png"))
+    # plt.figure(figsize=(8, 8))
+    # plt.plot(inwaves, influxes, label="Input")
+    # plt.plot(outwaves, r1, label="Resampled")
+    # plt.plot(outwaves, r2, label="Resampled with uncertainties")
+    # plt.ylim(0, 6e-13)
+    # plt.legend()
+    # plt.savefig(os.path.join(PATH, "fFeige110.png"))
