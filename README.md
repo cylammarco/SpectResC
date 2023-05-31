@@ -1,4 +1,4 @@
-# SpectResC
+# SpectResC: : Simple Spectral Resampling in C
 [![Coverage Status](https://coveralls.io/repos/github/cylammarco/SpectResC/badge.svg?branch=main)](https://coveralls.io/github/cylammarco/SpectResC?branch=main)
 [![Readthedocs Status](https://readthedocs.org/projects/spectres/badge/?version=latest&style=flat)](https://spectres.readthedocs.io)
 [![arXiv](https://img.shields.io/badge/arXiv-1705.05165-00ff00.svg)](https://arxiv.org/abs/1705.05165)
