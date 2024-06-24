@@ -8,8 +8,8 @@ from setuptools import Extension, setup
 setup(
     name="spectresc",
     maintainer="Marco C Lam",
-    maintainer_email="lam@mail.tau.ac.il",
-    version="1.0.2",
+    maintainer_email="mlam@roe.ac.uk",
+    version="1.0.3",
     install_requires=[
         "numpy",
     ],
@@ -27,6 +27,7 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Operating System :: Microsoft :: Windows",
         "Operating System :: Unix",
         "Operating System :: MacOS",

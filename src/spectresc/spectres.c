@@ -22,7 +22,6 @@ double *make_bins(double *wavs, int wavs_len)
 // Define the spectres function
 static PyObject *spectres(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-
     PyObject *new_wavs_obj, *spec_wavs_obj, *spec_fluxes_obj, *spec_errs_obj = NULL;
     double fill = NAN;
     int verbose = 1;
@@ -30,100 +29,42 @@ static PyObject *spectres(PyObject *self, PyObject *args, PyObject *kwargs)
     static char *kwlist[] = {"new_wavs", "spec_wavs", "spec_fluxes", "spec_errs", "fill", "verbose", NULL};
 
     /* Parse the input tuple */
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OOO|Odp:spectres", kwlist, &new_wavs_obj, &spec_wavs_obj, &spec_fluxes_obj, &spec_errs_obj,
-                                     &fill, &verbose))
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OOO|Odp:spectres", kwlist, &new_wavs_obj, &spec_wavs_obj, &spec_fluxes_obj, &spec_errs_obj, &fill, &verbose))
     {
         return NULL;
     }
 
     // Convert input object to NumPy array
-    PyArrayObject *_new_wavs_array = (PyArrayObject *)PyArray_FROM_OTF(new_wavs_obj, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
-    PyArrayObject *_spec_wavs_array = (PyArrayObject *)PyArray_FROM_OTF(spec_wavs_obj, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
-    PyArrayObject *_spec_fluxes_array = (PyArrayObject *)PyArray_FROM_OTF(spec_fluxes_obj, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
+    PyArrayObject *new_wavs_array = (PyArrayObject *)PyArray_FROM_OTF(new_wavs_obj, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
+    PyArrayObject *spec_wavs_array = (PyArrayObject *)PyArray_FROM_OTF(spec_wavs_obj, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
+    PyArrayObject *spec_fluxes_array = (PyArrayObject *)PyArray_FROM_OTF(spec_fluxes_obj, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
 
-    // Check if input array is contiguous
-    npy_intp *new_wavs_strides = PyArray_STRIDES(_new_wavs_array);
-    npy_intp *spec_wavs_strides = PyArray_STRIDES(_spec_wavs_array);
-    npy_intp *spec_fluxes_strides = PyArray_STRIDES(_spec_fluxes_array);
-    int new_wavs_is_contiguous = (new_wavs_strides[PyArray_NDIM(_new_wavs_array) - 1] == sizeof(double));
-    int spec_wavs_is_contiguous = (spec_wavs_strides[PyArray_NDIM(_spec_wavs_array) - 1] == sizeof(double));
-    int spec_fluxes_is_contiguous = (spec_fluxes_strides[PyArray_NDIM(_spec_fluxes_array) - 1] == sizeof(double));
-
-    // Create new array if input array is not contiguous
-    PyArrayObject *new_wavs_array;
-    PyArrayObject *spec_wavs_array;
-    PyArrayObject *spec_fluxes_array;
-
-    // handle the new_wavs_array
-    if (!new_wavs_is_contiguous)
+    if (!new_wavs_array || !spec_wavs_array || !spec_fluxes_array)
     {
-        npy_intp *new_wavs_shape = PyArray_SHAPE(_new_wavs_array);
-        new_wavs_array = (PyArrayObject *)PyArray_SimpleNew(PyArray_NDIM(_new_wavs_array), new_wavs_shape, NPY_DOUBLE);
-        if (new_wavs_array == NULL)
-        {
-            Py_DECREF(_new_wavs_array);
+        Py_XDECREF(new_wavs_array);
+        Py_XDECREF(spec_wavs_array);
+        Py_XDECREF(spec_fluxes_array);
+        return NULL;
+    }
+
+    // Create new arrays if input arrays are not contiguous
+    if (!PyArray_ISCONTIGUOUS(new_wavs_array))
+    {
+        new_wavs_array = (PyArrayObject *)PyArray_Cast(new_wavs_array, NPY_DOUBLE);
+        if (!new_wavs_array)
             return NULL;
-        }
-
-        // Copy data from input array into output array
-        char *src = (char *)PyArray_DATA(_new_wavs_array);
-        char *dst = (char *)PyArray_DATA(new_wavs_array);
-        npy_intp size = PyArray_SIZE(_new_wavs_array) * sizeof(short);
-        memcpy(dst, src, size);
     }
-    else
+    if (!PyArray_ISCONTIGUOUS(spec_wavs_array))
     {
-        // Use input array directly
-        Py_INCREF(_new_wavs_array);
-        new_wavs_array = _new_wavs_array;
-    }
-
-    // handle the spec_wavs_array
-    if (!spec_wavs_is_contiguous)
-    {
-        npy_intp *spec_wavs_shape = PyArray_SHAPE(_spec_wavs_array);
-        spec_wavs_array = (PyArrayObject *)PyArray_SimpleNew(PyArray_NDIM(_spec_wavs_array), spec_wavs_shape, NPY_DOUBLE);
-        if (spec_wavs_array == NULL)
-        {
-            Py_DECREF(_spec_wavs_array);
+        spec_wavs_array = (PyArrayObject *)PyArray_Cast(spec_wavs_array, NPY_DOUBLE);
+        if (!spec_wavs_array)
             return NULL;
-        }
-
-        // Copy data from input array into output array
-        char *src = (char *)PyArray_DATA(_spec_wavs_array);
-        char *dst = (char *)PyArray_DATA(spec_wavs_array);
-        npy_intp size = PyArray_SIZE(_spec_wavs_array) * sizeof(short);
-        memcpy(dst, src, size);
     }
-    else
+    if (!PyArray_ISCONTIGUOUS(spec_fluxes_array))
     {
-        // Use input array directly
-        Py_INCREF(_spec_wavs_array);
-        spec_wavs_array = _spec_wavs_array;
-    }
-
-    // handle the spec_fluxes_array
-    if (!spec_fluxes_is_contiguous)
-    {
-        npy_intp *spec_fluxes_shape = PyArray_SHAPE(_spec_fluxes_array);
-        spec_fluxes_array = (PyArrayObject *)PyArray_SimpleNew(PyArray_NDIM(_spec_fluxes_array), spec_fluxes_shape, NPY_DOUBLE);
-        if (spec_fluxes_array == NULL)
-        {
-            Py_DECREF(_spec_fluxes_array);
+        spec_fluxes_array = (PyArrayObject *)PyArray_Cast(spec_fluxes_array, NPY_DOUBLE);
+        if (!spec_fluxes_array)
             return NULL;
-        }
-
-        // Copy data from input array into output array
-        char *src = (char *)PyArray_DATA(_spec_fluxes_array);
-        char *dst = (char *)PyArray_DATA(spec_fluxes_array);
-        npy_intp size = PyArray_SIZE(_spec_fluxes_array) * sizeof(short);
-        memcpy(dst, src, size);
-    }
-    else
-    {
-        // Use input array directly
-        Py_INCREF(_spec_fluxes_array);
-        spec_fluxes_array = _spec_fluxes_array;
     }
 
     double *new_wavs = (double *)PyArray_DATA(new_wavs_array);
@@ -134,10 +75,10 @@ static PyObject *spectres(PyObject *self, PyObject *args, PyObject *kwargs)
     int new_wavs_len = (int)PyArray_DIM(new_wavs_array, 0);
     int spec_wavs_len = (int)PyArray_DIM(spec_wavs_array, 0);
 
-    double *spec_edges, *new_edges, *spec_widths;
-    spec_edges = make_bins(spec_wavs, spec_wavs_len);
-    new_edges = make_bins(new_wavs, new_wavs_len);
-    spec_widths = (double *)malloc(sizeof(double) * spec_wavs_len);
+    double *spec_edges = make_bins(spec_wavs, spec_wavs_len);
+    double *new_edges = make_bins(new_wavs, new_wavs_len);
+    double *spec_widths = (double *)malloc(sizeof(double) * spec_wavs_len);
+
     for (int i = 0; i < spec_wavs_len; i++)
     {
         spec_widths[i] = spec_edges[i + 1] - spec_edges[i];
@@ -146,45 +87,28 @@ static PyObject *spectres(PyObject *self, PyObject *args, PyObject *kwargs)
     // Create empty arrays for populating resampled flux and error
     double *new_fluxes = (double *)malloc(sizeof(double) * new_wavs_len);
 
-    /* Get pointers to the data as C-types. */
-    PyObject *spec_errs_array = NULL;
+    PyArrayObject *spec_errs_array = NULL;
     double *spec_errs = NULL;
     double *new_errs = NULL;
 
     if (spec_errs_obj != NULL)
     {
-        PyArrayObject *_spec_errs_array = (PyArrayObject *)PyArray_FROM_OTF(spec_errs_obj, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
+        spec_errs_array = (PyArrayObject *)PyArray_FROM_OTF(spec_errs_obj, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
 
-        // Check if input array is contiguous
-        npy_intp *spec_errs_strides = PyArray_STRIDES(_spec_errs_array);
-        int spec_errs_is_contiguous = (spec_errs_strides[PyArray_NDIM(_spec_errs_array) - 1] == sizeof(double));
-
-        // Create new array if input array is not contiguous
-        PyArrayObject *spec_errs_array;
-        if (!spec_errs_is_contiguous)
+        if (!spec_errs_array || !PyArray_ISCONTIGUOUS(spec_errs_array))
         {
-            npy_intp *spec_errs_shape = PyArray_SHAPE(_spec_errs_array);
-            spec_errs_array = (PyArrayObject *)PyArray_SimpleNew(PyArray_NDIM(_spec_errs_array), spec_errs_shape, NPY_DOUBLE);
-            if (spec_errs_array == NULL)
+            if (spec_errs_array)
+                spec_errs_array = (PyArrayObject *)PyArray_Cast(spec_errs_array, NPY_DOUBLE);
+            if (!spec_errs_array)
             {
-                Py_DECREF(_spec_errs_array);
+                Py_XDECREF(new_wavs_array);
+                Py_XDECREF(spec_wavs_array);
+                Py_XDECREF(spec_fluxes_array);
                 return NULL;
             }
+        }
 
-            // Copy data from input array into output array
-            char *src = (char *)PyArray_DATA(_spec_errs_array);
-            char *dst = (char *)PyArray_DATA(spec_errs_array);
-            npy_intp size = PyArray_SIZE(_spec_errs_array) * sizeof(short);
-            memcpy(dst, src, size);
-        }
-        else
-        {
-            // Use input array directly
-            Py_INCREF(_spec_errs_array);
-            spec_errs_array = _spec_errs_array;
-        }
         spec_errs = (double *)PyArray_DATA(spec_errs_array);
-
         new_errs = (double *)malloc(sizeof(double) * new_wavs_len);
     }
 
@@ -272,27 +196,34 @@ static PyObject *spectres(PyObject *self, PyObject *args, PyObject *kwargs)
     PyObject *new_fluxes_array = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, new_fluxes);
     PyArray_ENABLEFLAGS((PyArrayObject *)new_fluxes_array, NPY_ARRAY_OWNDATA);
 
-    // Set the base object for the arrays to NULL to indicate that the arrays are not owned by Python
-    // and reate a tuple to return the array(s)
     if (spec_errs != NULL)
     {
-        PyObject *new_errs_array = NULL;
-        PyObject *result_list = PyList_New(0);
-        PyList_Append(result_list, PyArray_Return(new_fluxes_array));
-        new_errs_array = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, new_errs);
+        PyObject *new_errs_array = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, new_errs);
         PyArray_ENABLEFLAGS((PyArrayObject *)new_errs_array, NPY_ARRAY_OWNDATA);
-        PyList_Append(result_list, PyArray_Return(new_errs_array));
+        PyObject *result_list = PyList_New(0);
+        PyList_Append(result_list, new_fluxes_array);
+        PyList_Append(result_list, new_errs_array);
+
+        Py_XDECREF(new_wavs_array);
+        Py_XDECREF(spec_wavs_array);
+        Py_XDECREF(spec_fluxes_array);
+        Py_XDECREF(spec_errs_array);
+
         return result_list;
     }
     else
     {
+        Py_XDECREF(new_wavs_array);
+        Py_XDECREF(spec_wavs_array);
+        Py_XDECREF(spec_fluxes_array);
+
         return new_fluxes_array;
     }
 }
 
 // Define the module methods
 static PyMethodDef SpectrescMethods[] = {
-    {"spectres", spectres, METH_VARARGS | METH_KEYWORDS, "Resample a spectrum onto a new wavelength grid."},
+    {"spectres", (PyCFunction)spectres, METH_VARARGS | METH_KEYWORDS, "Resample a spectrum onto a new wavelength grid."},
     {NULL, NULL, 0, NULL}};
 
 // Define the module structure
