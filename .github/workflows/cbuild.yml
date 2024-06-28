@@ -35,6 +35,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: docker/setup-qemu-action@v2
+        if: matrix.os == 'ubuntu-latest'
+
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.19.1
         env:
