@@ -16,8 +16,22 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-13, macos-14]
-
+        include:
+          - {os: macos-latest, arch: x86_64, build: "*"}
+          - {os: macos-latest, arch: arm64, build: "*"}
+          - {os: windows-latest, arch: AMD64, build: "*"}
+          - {os: windows-latest, arch: x86, build: "*"}          
+          - {os: ubuntu-latest, arch: x86_64, build: "*"}
+          - {os: ubuntu-latest, arch: aarch64, build: "*-manylinux*"}
+          - {os: ubuntu-latest, arch: ppc64le, build: "*-manylinux*"}
+          - {os: ubuntu-latest, arch: s390x, build: "*-manylinux*"}
+          - {os: ubuntu-latest, arch: x86_64, build: "*-manylinux*"}
+          - {os: ubuntu-latest, arch: i686, build: "*-manylinux*"}
+          - {os: ubuntu-latest, arch: aarch64, build: "*-musllinux*"}
+          - {os: ubuntu-latest, arch: ppc64le, build: "*-musllinux*"}
+          - {os: ubuntu-latest, arch: s390x, build: "*-musllinux*"}
+          - {os: ubuntu-latest, arch: x86_64, build: "*-musllinux*"}
+          - {os: ubuntu-latest, arch: i686, build: "*-musllinux*"}
     steps:
       - uses: actions/checkout@v4
 
@@ -26,6 +40,8 @@ jobs:
         env:
           # Disable building PyPy wheels on all platforms
           CIBW_SKIP: pp*
+          CIBW_ARCHS: ${{ matrix.arch }}
+          CIBW_BUILD: ${{ matrix.build }}
 
       - uses: actions/upload-artifact@v4
         with:
