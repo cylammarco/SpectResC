@@ -15,7 +15,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-13, macos-14]
+        os: [macos-13, macos-14]
 
     steps:
       - uses: actions/checkout@v4
@@ -63,6 +63,6 @@ jobs:
 
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          user: ${{ secrets.pypi_username }}
+          user: __token__
           password: ${{ secrets.pypi_password }}
           repository_url: https://test.pypi.org/legacy/
