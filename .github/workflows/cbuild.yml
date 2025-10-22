@@ -15,13 +15,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-13, macos-14]
+        os: [ubuntu-latest, windows-latest, macos-14, macos-15, macos-26]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.19.1
+        uses: pypa/cibuildwheel@v3.2.1
         env:
           # Disable building PyPy wheels on all platforms
           CIBW_SKIP: pp*
@@ -35,7 +35,7 @@ jobs:
     name: Build source distribution
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Build sdist
         run: pipx run build --sdist
