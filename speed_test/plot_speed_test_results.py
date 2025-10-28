@@ -68,7 +68,7 @@ for k, (p_e, c_e, size) in enumerate(
 axs[0].grid()
 axs[1].grid()
 
-axs[1].legend()
+axs[1].legend(loc="upper left")
 
 axs[0].xaxis.set_major_formatter(ScalarFormatter(useMathText=False))
 axs[1].xaxis.set_major_formatter(ScalarFormatter(useMathText=False))
@@ -84,8 +84,8 @@ axs[1].xaxis.set_minor_locator(NullLocator())
 axs[0].set_xlim(150, 4250)
 axs[1].set_xlim(150, 4250)
 
-axs[0].set_ylim(0, 500)
-axs[1].set_ylim(0, 500)
+axs[0].set_ylim(0, 520)
+axs[1].set_ylim(0, 520)
 
 axs[1].set_yticklabels([])
 
