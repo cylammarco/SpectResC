@@ -60,10 +60,10 @@ jobs:
           pattern: cibw-*
           path: dist
           merge-multiple: true
-
+      - name: Verify distributions are valid
+        run: |
+          pipx install twine
+          twine check dist/*
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          user: __token__
-          password: ${{ secrets.test_pypi_password }}
-          repository_url: https://test.pypi.org/legacy/
           skip-existing: true
