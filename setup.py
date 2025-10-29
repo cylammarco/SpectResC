@@ -5,6 +5,7 @@ import numpy
 from setuptools import Extension, setup, find_packages
 
 setup(
+    name="spectresc",
     include_dirs=["/usr/local/lib", numpy.get_include()],
     package_dir={"": "src"},  # Tell setuptools packages are under src/
     packages=find_packages(where="src"),  # Find packages in src/
