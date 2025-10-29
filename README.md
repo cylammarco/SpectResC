@@ -9,7 +9,7 @@ This is a Python package written with C extension to provide significant perform
 
 ![alt text](https://github.com/cylammarco/SpectResC/blob/main/speed_test/speed_test.png?raw=true)
 
-We keep the implementation as close to SpectRes as possible. As of SpectRes v2.2.0, we do not see discrepant results between using SpectRes and SpectResC.
+We keep the implementation as close to SpectRes as possible. The speed test was performed with a single core of Intel(R) Xeon(R) Gold 6226R CPU @ 2.90GHz (Oct 2025) against SpectRes v2.2.2.
 
 ## Installation
 

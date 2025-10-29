@@ -20,7 +20,7 @@ void make_bins(double *wavs, int wavs_len, double *edges, double *widths)
     {
         widths[i] = edges[i + 1] - edges[i];
     }
-    widths[wavs_len - 1] = wavs[wavs_len - 1] - wavs[wavs_len - 2];
+    widths[wavs_len - 1] = edges[wavs_len] - edges[wavs_len - 1];
 }
 
 // Define the spectres function
