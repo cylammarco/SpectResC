@@ -245,11 +245,12 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          # unpacks all CIBW artifacts into dist/
-          pattern: cibw-*
           path: dist
-          merge-multiple: true
-
+      - name: Merge artifacts safely
+        run: |
+          mkdir -p dist_merged
+          find dist -type f -name "*.whl" -exec cp {} dist_merged/ \;
+          find dist -type f -name "*.tar.gz" -exec cp {} dist_merged/ \;
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository_url: https://upload.pypi.org/legacy/
