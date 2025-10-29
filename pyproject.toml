@@ -28,3 +28,6 @@ ldflags = []
 
 [tool.coverage.run]
 relative_files = true
+
+[project]
+license = {file = "LICENSE"}
