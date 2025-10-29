@@ -222,21 +222,21 @@ static PyObject *spectres(PyObject *self, PyObject *args, PyObject *kwargs)
 }
 
 // Define the module methods
-static PyMethodDef SpectrescMethods[] = {
+static PyMethodDef SpectresMethods[] = {
     {"spectres", (PyCFunction)spectres, METH_VARARGS | METH_KEYWORDS, "Resample a spectrum onto a new wavelength grid."},
     {NULL, NULL, 0, NULL}};
 
 // Define the module structure
-static struct PyModuleDef spectrescmodule = {
+static struct PyModuleDef spectresmodule = {
     PyModuleDef_HEAD_INIT,
-    "spectresc",                                              // Module name
+    "spectres",                                               // Submodule name
     "Python extension module for the spectres function in C", // Module description
     -1,
-    SpectrescMethods};
+    SpectresMethods};
 
 // Define the module initialization function
 PyMODINIT_FUNC PyInit_spectresc(void)
 {
     import_array(); // Initialize NumPy
-    return PyModule_Create(&spectrescmodule);
+    return PyModule_Create(&spectresmodule);
 }
