@@ -15,6 +15,7 @@ jobs:
     name: Build wheel for ${{ matrix.os }}-${{ matrix.cibw_python }}-${{ matrix.cibw_arch }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false  # Continue other builds even if one fails
       matrix:
         os: [ubuntu-latest, macos-14, macos-15, macos-26, windows-latest]
         cibw_python: [cp39, cp310, cp311, cp312, cp313, cp314]
@@ -64,6 +65,12 @@ jobs:
           CIBW_BUILD: ${{ matrix.cibw_python }}-*
           CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_SKIP: pp*
+
+      - name: Verify wheel
+        run: |
+          python -m pip install --upgrade pip twine
+          python -m twine check wheelhouse/*.whl
+        shell: bash
 
       - uses: actions/upload-artifact@v4
         with:
