@@ -49,9 +49,11 @@ jobs:
           # macOS x86_64 only valid for Intel macs
           - os: macos-26
             cibw_arch: arm64  # keep if ARM-only runner
-          # Windows doesn’t support arm64
+          # Windows doesn’t support arm64 and x86_64
           - os: windows-latest
             cibw_arch: arm64
+          - os: windows-latest
+            cibw_arch: x86_64
 
     steps:
       - uses: actions/checkout@v5
