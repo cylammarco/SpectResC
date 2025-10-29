@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "spectresc"
-version = "1.1.0.dev0"
+version = "1.1.0"
 description = "SpectRes in C"
 readme = "README.md"
 requires-python = ">=3.9"
