@@ -11,7 +11,7 @@ setup(
     packages=find_packages(where="src"),  # Find packages in src/
     ext_modules=[
         Extension(
-            "spectresc",
+            "spectresc.spectres",
             sources=["src/spectresc/spectres.c"],
             extra_compile_args=["-O3", "-fPIC", "-shared"],
         )
