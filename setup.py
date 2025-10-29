@@ -1,8 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import numpy
 from setuptools import Extension, setup, find_packages
+import sys
+
+import numpy
+
+# Platform-specific compile args
+if sys.platform == "win32":
+    extra_compile_args = ["/O2"]  # Optimize for Windows
+else:
+    extra_compile_args = ["-O3", "-fPIC"]  # Optimize for Unix/macOS
 
 setup(
     name="spectresc",
@@ -13,7 +21,7 @@ setup(
         Extension(
             "spectresc",
             sources=["src/spectresc/spectres.c"],
-            extra_compile_args=["-O3", "-fPIC"],
+            extra_compile_args=extra_compile_args,
         )
     ],
 )
