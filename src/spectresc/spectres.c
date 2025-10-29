@@ -6,10 +6,8 @@
 #include <Python.h>
 #include <numpy/arrayobject.h>
 
-double *make_bins(double *wavs, int wavs_len)
+void make_bins(double *wavs, int wavs_len, double *edges, double *widths)
 {
-    double *edges = (double *)malloc(sizeof(double) * (wavs_len + 1));
-
     edges[0] = wavs[0] - (wavs[1] - wavs[0]) / 2.0;
     edges[wavs_len] = wavs[wavs_len - 1] + (wavs[wavs_len - 1] - wavs[wavs_len - 2]) / 2.0;
 
@@ -18,7 +16,11 @@ double *make_bins(double *wavs, int wavs_len)
         edges[i] = (wavs[i] + wavs[i - 1]) / 2.0;
     }
 
-    return edges;
+    for (int i = 0; i < wavs_len - 1; i++)
+    {
+        widths[i] = edges[i + 1] - edges[i];
+    }
+    widths[wavs_len - 1] = edges[wavs_len] - edges[wavs_len - 1];
 }
 
 // Define the spectres function
@@ -49,196 +51,192 @@ static PyObject *spectres(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
 
-    // Create new arrays if input arrays are not contiguous
-    if (!PyArray_ISCONTIGUOUS(new_wavs_array))
-    {
-        new_wavs_array = (PyArrayObject *)PyArray_Cast(new_wavs_array, NPY_DOUBLE);
-        if (!new_wavs_array)
-            return NULL;
-    }
-    if (!PyArray_ISCONTIGUOUS(spec_wavs_array))
-    {
-        spec_wavs_array = (PyArrayObject *)PyArray_Cast(spec_wavs_array, NPY_DOUBLE);
-        if (!spec_wavs_array)
-            return NULL;
-    }
-    if (!PyArray_ISCONTIGUOUS(spec_fluxes_array))
-    {
-        spec_fluxes_array = (PyArrayObject *)PyArray_Cast(spec_fluxes_array, NPY_DOUBLE);
-        if (!spec_fluxes_array)
-            return NULL;
-    }
-
     double *new_wavs = (double *)PyArray_DATA(new_wavs_array);
     double *spec_wavs = (double *)PyArray_DATA(spec_wavs_array);
     double *spec_fluxes = (double *)PyArray_DATA(spec_fluxes_array);
 
-    // Get the length of the input arrays
     int new_wavs_len = (int)PyArray_DIM(new_wavs_array, 0);
     int spec_wavs_len = (int)PyArray_DIM(spec_wavs_array, 0);
 
-    double *spec_edges = make_bins(spec_wavs, spec_wavs_len);
-    double *new_edges = make_bins(new_wavs, new_wavs_len);
-    double *spec_widths = (double *)malloc(sizeof(double) * spec_wavs_len);
+    /* --- Determine flux array dimensions --- */
+    int ndim = PyArray_NDIM(spec_fluxes_array);
+    npy_intp *flux_shape = PyArray_DIMS(spec_fluxes_array);
 
-    for (int i = 0; i < spec_wavs_len; i++)
+    if (flux_shape[ndim - 1] != spec_wavs_len)
     {
-        spec_widths[i] = spec_edges[i + 1] - spec_edges[i];
+        PyErr_SetString(PyExc_ValueError, "Last dimension of spec_fluxes must match length of spec_wavs.");
+        return NULL;
     }
 
-    // Create empty arrays for populating resampled flux and error
-    double *new_fluxes = (double *)malloc(sizeof(double) * new_wavs_len);
+    int num_spectra = 1;
+    for (int i = 0; i < ndim - 1; i++)
+    {
+        num_spectra *= flux_shape[i];
+    }
 
+    /* --- Make bins --- */
+    double *spec_edges = malloc((spec_wavs_len + 1) * sizeof(double));
+    double *spec_widths = malloc(spec_wavs_len * sizeof(double));
+    make_bins(spec_wavs, spec_wavs_len, spec_edges, spec_widths);
+
+    double *new_edges = malloc((new_wavs_len + 1) * sizeof(double));
+    double *new_widths = malloc(new_wavs_len * sizeof(double));
+    make_bins(new_wavs, new_wavs_len, new_edges, new_widths);
+
+    /* --- Handle optional errors --- */
     PyArrayObject *spec_errs_array = NULL;
     double *spec_errs = NULL;
-    double *new_errs = NULL;
 
-    if (spec_errs_obj != NULL)
+    if (spec_errs_obj != NULL && spec_errs_obj != Py_None)
     {
         spec_errs_array = (PyArrayObject *)PyArray_FROM_OTF(spec_errs_obj, NPY_DOUBLE, NPY_ARRAY_IN_ARRAY);
-
-        if (!spec_errs_array || !PyArray_ISCONTIGUOUS(spec_errs_array))
+        if (!spec_errs_array)
         {
-            if (spec_errs_array)
-                spec_errs_array = (PyArrayObject *)PyArray_Cast(spec_errs_array, NPY_DOUBLE);
-            if (!spec_errs_array)
+            Py_XDECREF(new_wavs_array);
+            Py_XDECREF(spec_wavs_array);
+            Py_XDECREF(spec_fluxes_array);
+            return NULL;
+        }
+
+        npy_intp *err_shape = PyArray_DIMS(spec_errs_array);
+        for (int i = 0; i < ndim; i++)
+        {
+            if (err_shape[i] != flux_shape[i])
             {
-                Py_XDECREF(new_wavs_array);
-                Py_XDECREF(spec_wavs_array);
-                Py_XDECREF(spec_fluxes_array);
+                PyErr_SetString(PyExc_ValueError, "spec_errs must have the same shape as spec_fluxes.");
                 return NULL;
             }
         }
 
         spec_errs = (double *)PyArray_DATA(spec_errs_array);
-        new_errs = (double *)malloc(sizeof(double) * new_wavs_len);
     }
 
-    int start = 0, stop = 0, warned = 0;
-    for (int i = 0; i < new_wavs_len; i++)
+    /* --- Create output arrays --- */
+    npy_intp *new_flux_shape = malloc(ndim * sizeof(npy_intp));
+    memcpy(new_flux_shape, flux_shape, ndim * sizeof(npy_intp));
+    new_flux_shape[ndim - 1] = new_wavs_len;
+
+    PyArrayObject *new_fluxes_array = (PyArrayObject *)PyArray_SimpleNew(ndim, new_flux_shape, NPY_DOUBLE);
+    double *new_fluxes_data = (double *)PyArray_DATA(new_fluxes_array);
+
+    PyArrayObject *new_errs_array = NULL;
+    double *new_errs_data = NULL;
+    if (spec_errs != NULL)
     {
-        if (new_edges[i] < spec_edges[0] || new_edges[i + 1] > spec_edges[spec_wavs_len])
+        new_errs_array = (PyArrayObject *)PyArray_SimpleNew(ndim, new_flux_shape, NPY_DOUBLE);
+        new_errs_data = (double *)PyArray_DATA(new_errs_array);
+    }
+
+    free(new_flux_shape);
+
+    /* --- Loop over each spectrum --- */
+    for (int s = 0; s < num_spectra; s++)
+    {
+        double *this_flux = spec_fluxes + s * spec_wavs_len;
+        double *this_err = spec_errs != NULL ? spec_errs + s * spec_wavs_len : NULL;
+        double *out_flux = new_fluxes_data + s * new_wavs_len;
+        double *out_err = spec_errs != NULL ? new_errs_data + s * new_wavs_len : NULL;
+
+        int start = 0, stop = 0, warned = 0;
+
+        for (int i = 0; i < new_wavs_len; i++)
         {
-            new_fluxes[i] = fill;
-            if (spec_errs != NULL)
+            if (new_edges[i] < spec_edges[0] || new_edges[i + 1] > spec_edges[spec_wavs_len])
             {
-                new_errs[i] = fill;
-            }
-            if ((i == 0 || i == new_wavs_len - 1) && verbose && !warned)
-            {
-                warned = 1;
-                printf("SpectResC: new_wavs contains values outside the range "
-                       "in spec_wavs, new_fluxes and new_errs will be filled "
-                       "with the value set in the 'fill' keyword argument.\n");
-            }
-        }
-        else
-        {
-            while (spec_edges[start + 1] <= new_edges[i])
-            {
-                start += 1;
+                out_flux[i] = fill;
+                if (out_err != NULL)
+                    out_err[i] = fill;
+
+                if ((i == 0 || i == new_wavs_len - 1) && verbose && !warned)
+                {
+                    warned = 1;
+                    PyErr_WarnEx(PyExc_RuntimeWarning,
+                                 "SpectResC: new_wavs contains values outside the range in spec_wavs; filled with 'fill'.",
+                                 1);
+                }
+                continue;
             }
 
+            while (spec_edges[start + 1] <= new_edges[i])
+                start++;
             while (spec_edges[stop + 1] < new_edges[i + 1])
-            {
-                stop += 1;
-            }
+                stop++;
 
             if (stop == start)
             {
-                new_fluxes[i] = spec_fluxes[start];
-                if (spec_errs != NULL)
-                {
-                    new_errs[i] = spec_errs[start];
-                }
+                out_flux[i] = this_flux[start];
+                if (out_err != NULL)
+                    out_err[i] = this_err[start];
             }
             else
             {
                 double start_factor = ((spec_edges[start + 1] - new_edges[i]) / (spec_edges[start + 1] - spec_edges[start]));
                 double end_factor = ((new_edges[i + 1] - spec_edges[stop]) / (spec_edges[stop + 1] - spec_edges[stop]));
 
-                spec_widths[start] *= start_factor;
-                spec_widths[stop] *= end_factor;
-
-                // Populate new_fluxes spectrum and uncertainty arrays
                 double f_widths_sum = 0.0;
                 double spec_widths_sum = 0.0;
                 double e_wid_sum = 0.0;
+
                 for (int j = start; j <= stop; j++)
                 {
-                    f_widths_sum += spec_widths[j] * spec_fluxes[j];
-                    spec_widths_sum += spec_widths[j];
-                    if (spec_errs != NULL)
-                    {
-                        e_wid_sum += pow(spec_widths[j] * spec_errs[j], 2);
-                    }
+                    double weight = spec_widths[j];
+                    if (j == start)
+                        weight *= start_factor;
+                    if (j == stop)
+                        weight *= end_factor;
+
+                    f_widths_sum += weight * this_flux[j];
+                    spec_widths_sum += weight;
+                    if (out_err != NULL)
+                        e_wid_sum += pow(weight * this_err[j], 2);
                 }
 
-                new_fluxes[i] = f_widths_sum / spec_widths_sum;
-
-                if (spec_errs != NULL)
-                {
-                    new_errs[i] = sqrt(e_wid_sum) / spec_widths_sum;
-                }
-
-                // Put back the old bin widths to their initial values
-                spec_widths[start] /= start_factor;
-                spec_widths[stop] /= end_factor;
+                out_flux[i] = f_widths_sum / spec_widths_sum;
+                if (out_err != NULL)
+                    out_err[i] = sqrt(e_wid_sum) / spec_widths_sum;
             }
         }
     }
 
-    // Free the memory
     free(spec_edges);
-    free(new_edges);
     free(spec_widths);
+    free(new_edges);
+    free(new_widths);
 
-    // Create NumPy arrays to return the data to Python
-    npy_intp dims[1] = {new_wavs_len};
-    PyObject *new_fluxes_array = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, new_fluxes);
-    PyArray_ENABLEFLAGS((PyArrayObject *)new_fluxes_array, NPY_ARRAY_OWNDATA);
+    Py_XDECREF(new_wavs_array);
+    Py_XDECREF(spec_wavs_array);
+    Py_XDECREF(spec_fluxes_array);
+    Py_XDECREF(spec_errs_array);
 
     if (spec_errs != NULL)
     {
-        PyObject *new_errs_array = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, new_errs);
-        PyArray_ENABLEFLAGS((PyArrayObject *)new_errs_array, NPY_ARRAY_OWNDATA);
         PyObject *result_list = PyList_New(0);
-        PyList_Append(result_list, new_fluxes_array);
-        PyList_Append(result_list, new_errs_array);
-
-        Py_XDECREF(new_wavs_array);
-        Py_XDECREF(spec_wavs_array);
-        Py_XDECREF(spec_fluxes_array);
-        Py_XDECREF(spec_errs_array);
-
+        PyList_Append(result_list, (PyObject *)new_fluxes_array);
+        PyList_Append(result_list, (PyObject *)new_errs_array);
         return result_list;
     }
     else
     {
-        Py_XDECREF(new_wavs_array);
-        Py_XDECREF(spec_wavs_array);
-        Py_XDECREF(spec_fluxes_array);
-
-        return new_fluxes_array;
+        return (PyObject *)new_fluxes_array;
     }
 }
 
 // Define the module methods
-static PyMethodDef SpectrescMethods[] = {
+static PyMethodDef SpectresMethods[] = {
     {"spectres", (PyCFunction)spectres, METH_VARARGS | METH_KEYWORDS, "Resample a spectrum onto a new wavelength grid."},
     {NULL, NULL, 0, NULL}};
 
 // Define the module structure
-static struct PyModuleDef spectrescmodule = {
+static struct PyModuleDef moduledef = {
     PyModuleDef_HEAD_INIT,
-    "spectresc",                                              // Module name
+    "spectresc", // Submodule name, it must match the Extension name in setup.py
     "Python extension module for the spectres function in C", // Module description
     -1,
-    SpectrescMethods};
+    SpectresMethods};
 
 // Define the module initialization function
 PyMODINIT_FUNC PyInit_spectresc(void)
 {
     import_array(); // Initialize NumPy
-    return PyModule_Create(&spectrescmodule);
+    return PyModule_Create(&moduledef);
 }

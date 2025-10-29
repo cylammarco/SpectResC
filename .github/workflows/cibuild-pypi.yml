@@ -12,31 +12,219 @@ on:
 
 jobs:
   build_wheels:
-    name: Build wheels on ${{ matrix.os }}
+    name: Build wheel for ${{ matrix.os }}-${{ matrix.cibw_python }}-${{ matrix.cibw_arch }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false  # Continue other builds even if one fails
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-13, macos-14]
+        include:
+          # Linux x86_64
+          - os: ubuntu-latest
+            cibw_python: cp39
+            cibw_arch: x86_64
+          - os: ubuntu-latest
+            cibw_python: cp310
+            cibw_arch: x86_64
+          - os: ubuntu-latest
+            cibw_python: cp311
+            cibw_arch: x86_64
+          - os: ubuntu-latest
+            cibw_python: cp312
+            cibw_arch: x86_64
+          - os: ubuntu-latest
+            cibw_python: cp313
+            cibw_arch: x86_64
+          - os: ubuntu-latest
+            cibw_python: cp314
+            cibw_arch: x86_64
 
+          # macOS ARM64 (Apple Silicon)
+          - os: macos-14
+            cibw_python: cp39
+            cibw_arch: arm64
+          - os: macos-14
+            cibw_python: cp310
+            cibw_arch: arm64
+          - os: macos-14
+            cibw_python: cp311
+            cibw_arch: arm64
+          - os: macos-14
+            cibw_python: cp312
+            cibw_arch: arm64
+          - os: macos-14
+            cibw_python: cp313
+            cibw_arch: arm64
+          - os: macos-14
+            cibw_python: cp314
+            cibw_arch: arm64
+
+          - os: macos-15
+            cibw_python: cp39
+            cibw_arch: arm64
+          - os: macos-15
+            cibw_python: cp310
+            cibw_arch: arm64
+          - os: macos-15
+            cibw_python: cp311
+            cibw_arch: arm64
+          - os: macos-15
+            cibw_python: cp312
+            cibw_arch: arm64
+          - os: macos-15
+            cibw_python: cp313
+            cibw_arch: arm64
+          - os: macos-15
+            cibw_python: cp314
+            cibw_arch: arm64
+
+          - os: macos-26
+            cibw_python: cp39
+            cibw_arch: arm64
+          - os: macos-26
+            cibw_python: cp310
+            cibw_arch: arm64
+          - os: macos-26
+            cibw_python: cp311
+            cibw_arch: arm64
+          - os: macos-26
+            cibw_python: cp312
+            cibw_arch: arm64
+          - os: macos-26
+            cibw_python: cp313
+            cibw_arch: arm64
+          - os: macos-26
+            cibw_python: cp314
+            cibw_arch: arm64
+
+          # macOS Intel x86_64
+          - os: macos-14
+            cibw_python: cp39
+            cibw_arch: x86_64
+          - os: macos-14
+            cibw_python: cp310
+            cibw_arch: x86_64
+          - os: macos-14
+            cibw_python: cp311
+            cibw_arch: x86_64
+          - os: macos-14
+            cibw_python: cp312
+            cibw_arch: x86_64
+          - os: macos-14
+            cibw_python: cp313
+            cibw_arch: x86_64
+          - os: macos-14
+            cibw_python: cp314
+            cibw_arch: x86_64
+
+          - os: macos-15
+            cibw_python: cp39
+            cibw_arch: x86_64
+          - os: macos-15
+            cibw_python: cp310
+            cibw_arch: x86_64
+          - os: macos-15
+            cibw_python: cp311
+            cibw_arch: x86_64
+          - os: macos-15
+            cibw_python: cp312
+            cibw_arch: x86_64
+          - os: macos-15
+            cibw_python: cp313
+            cibw_arch: x86_64
+          - os: macos-15
+            cibw_python: cp314
+            cibw_arch: x86_64
+
+          - os: macos-26
+            cibw_python: cp39
+            cibw_arch: x86_64
+          - os: macos-26
+            cibw_python: cp310
+            cibw_arch: x86_64
+          - os: macos-26
+            cibw_python: cp311
+            cibw_arch: x86_64
+          - os: macos-26
+            cibw_python: cp312
+            cibw_arch: x86_64
+          - os: macos-26
+            cibw_python: cp313
+            cibw_arch: x86_64
+          - os: macos-26
+            cibw_python: cp314
+            cibw_arch: x86_64
+
+          # Windows AMD64
+          - os: windows-latest
+            cibw_python: cp39
+            cibw_arch: AMD64
+          - os: windows-latest
+            cibw_python: cp310
+            cibw_arch: AMD64
+          - os: windows-latest
+            cibw_python: cp311
+            cibw_arch: AMD64
+          - os: windows-latest
+            cibw_python: cp312
+            cibw_arch: AMD64
+          - os: windows-latest
+            cibw_python: cp313
+            cibw_arch: AMD64
+          - os: windows-latest
+            cibw_python: cp314
+            cibw_arch: AMD64
+
+          # Windows x86
+          - os: windows-latest
+            cibw_python: cp39
+            cibw_arch: x86
+          - os: windows-latest
+            cibw_python: cp310
+            cibw_arch: x86
+          - os: windows-latest
+            cibw_python: cp311
+            cibw_arch: x86
+          - os: windows-latest
+            cibw_python: cp312
+            cibw_arch: x86
+          - os: windows-latest
+            cibw_python: cp313
+            cibw_arch: x86
+          - os: windows-latest
+            cibw_python: cp314
+            cibw_arch: x86
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.19.1
+        uses: pypa/cibuildwheel@v3.2.1
         env:
-          # Disable building PyPy wheels on all platforms
+          CIBW_BUILD: ${{ matrix.cibw_python }}-*
+          CIBW_ARCHS: ${{ matrix.cibw_arch }}
           CIBW_SKIP: pp*
+          CIBW_BUILD_VERBOSITY: 3
+
+      - name: Verify wheel
+        run: |
+          python -m pip install --upgrade pip twine
+          python -m twine check wheelhouse/*.whl
+        shell: bash
 
       - uses: actions/upload-artifact@v4
         with:
-          name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
+          name: cibw-wheel-${{ matrix.os }}-${{ matrix.cibw_python }}-${{ matrix.cibw_arch }}
           path: ./wheelhouse/*.whl
 
   build_sdist:
     name: Build source distribution
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Build sdist
         run: pipx run build --sdist
@@ -49,7 +237,6 @@ jobs:
   upload_pypi:
     needs: [build_wheels, build_sdist]
     runs-on: ubuntu-latest
-    environment: pypi
     permissions:
       id-token: write
     if: github.event_name == 'release' && github.event.action == 'published'
@@ -58,13 +245,18 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          # unpacks all CIBW artifacts into dist/
           pattern: cibw-*
-          path: dist
-          merge-multiple: true
+          path: artifacts
+          merge-multiple: false
+
+      - name: Move all wheels and tarballs into dist/
+        run: |
+          mkdir -p dist
+          find artifacts -type f -name "*.whl" -exec mv {} dist/ \;
+          find artifacts -type f -name "*.tar.gz" -exec mv {} dist/ \;
+          ls -R dist
 
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          user: __token__
-          password: ${{ secrets.pypi_password }}
           repository_url: https://upload.pypi.org/legacy/
+          package_dir: dist

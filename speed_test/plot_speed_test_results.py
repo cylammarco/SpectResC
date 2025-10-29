@@ -27,7 +27,6 @@ for j, (p, n, size) in enumerate(zip(sp_time_array, sn_time_array, outsizes)):
     axs[0].plot(
         insizes,
         p / n,
-        label=f"numba with output size: {size}",
         color=red_gradient[j],
     )
 
@@ -35,7 +34,6 @@ for j, (p, c, size) in enumerate(zip(sp_time_array, sc_time_array, outsizes)):
     axs[0].plot(
         insizes,
         p / c,
-        label=f"C extension with output size: {size}",
         color=blue_gradient[j],
     )
 
@@ -50,6 +48,7 @@ for k, (p_e, n_e, size) in enumerate(
         insizes,
         p_e / n_e,
         color=red_gradient[k],
+        label=f"numba with output size: {size}",
     )
 
 for k, (p_e, c_e, size) in enumerate(
@@ -63,12 +62,13 @@ for k, (p_e, c_e, size) in enumerate(
         insizes,
         p_e / c_e,
         color=blue_gradient[k],
+        label=f"C extension with output size: {size}",
     )
 
 axs[0].grid()
 axs[1].grid()
 
-axs[0].legend()
+axs[1].legend(loc="upper left")
 
 axs[0].xaxis.set_major_formatter(ScalarFormatter(useMathText=False))
 axs[1].xaxis.set_major_formatter(ScalarFormatter(useMathText=False))
@@ -84,8 +84,8 @@ axs[1].xaxis.set_minor_locator(NullLocator())
 axs[0].set_xlim(150, 4250)
 axs[1].set_xlim(150, 4250)
 
-axs[0].set_ylim(0, 400)
-axs[1].set_ylim(0, 400)
+axs[0].set_ylim(0, 520)
+axs[1].set_ylim(0, 520)
 
 axs[1].set_yticklabels([])
 

@@ -1,9 +1,8 @@
 from timeit import Timer
 
 import numpy as np
-from matplotlib import pyplot as plt
-from spectres import spectres as sp
-from spectres import spectres_numba as sn
+from spectres.spectral_resampling import spectres as sp
+from spectres.spectral_resampling_numba import spectres_numba as sn
 from spectresc import spectres as sc
 
 
@@ -113,7 +112,7 @@ if __name__ == "__main__":
             timer = Timer(
                 stmt=f"call_spectresn({size_i}, {size_o})",
                 setup=(
-                    "from spectres import spectres_numba as sn; from __main__"
+                    "from spectres.spectral_resampling_numba import spectres_numba as sn; from __main__"
                     " import call_spectresn"
                 ),
             )
@@ -193,7 +192,7 @@ if __name__ == "__main__":
             timer = Timer(
                 stmt=f"call_spectresn_err({size_i}, {size_o})",
                 setup=(
-                    "from spectres import spectres_numba as sn; from __main__"
+                    "from spectres.spectral_resampling_numba import spectres_numba as sn; from __main__"
                     " import call_spectresn_err"
                 ),
             )
