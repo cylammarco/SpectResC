@@ -60,3 +60,4 @@ relative_files = true
 
 [tool.setuptools]
 packages = ["spectresc"]
+package-dir = {"" = "src"}
