@@ -37,7 +37,26 @@ jobs:
             cibw_arch: "x86_64"
           
           # macOS ARM64 (M1/M2/M3)
-          - os: macos-15  # macOS 15 "macos26" runner
+          - os: macos-14
+            cibw_python: cp39
+            cibw_arch: "arm64"
+          - os: macos-14
+            cibw_python: cp310
+            cibw_arch: "arm64"
+          - os: macos-14
+            cibw_python: cp311
+            cibw_arch: "arm64"
+          - os: macos-14
+            cibw_python: cp312
+            cibw_arch: "arm64"
+          - os: macos-14
+            cibw_python: cp313
+            cibw_arch: "arm64"
+          - os: macos-14
+            cibw_python: cp314
+            cibw_arch: "arm64"
+
+          - os: macos-15
             cibw_python: cp39
             cibw_arch: "arm64"
           - os: macos-15
@@ -55,27 +74,65 @@ jobs:
           - os: macos-15
             cibw_python: cp314
             cibw_arch: "arm64"
-          
+
+          - os: macos-26
+            cibw_python: cp39
+            cibw_arch: "arm64"
+          - os: macos-26
+            cibw_python: cp310
+            cibw_arch: "arm64"
+          - os: macos-26
+            cibw_python: cp311
+            cibw_arch: "arm64"
+          - os: macos-26
+            cibw_python: cp312
+            cibw_arch: "arm64"
+          - os: macos-26
+            cibw_python: cp313
+            cibw_arch: "arm64"
+          - os: macos-26
+            cibw_python: cp314
+            cibw_arch: "arm64"
+
           # macOS x86_64 (Intel)
-          - os: macos-13
+          - os: macos-14
             cibw_python: cp39
             cibw_arch: "x86_64"
-          - os: macos-13
+          - os: macos-14
             cibw_python: cp310
             cibw_arch: "x86_64"
-          - os: macos-13
+          - os: macos-14
             cibw_python: cp311
             cibw_arch: "x86_64"
-          - os: macos-13
+          - os: macos-14
             cibw_python: cp312
             cibw_arch: "x86_64"
-          - os: macos-13
+          - os: macos-14
             cibw_python: cp313
             cibw_arch: "x86_64"
-          - os: macos-13
+          - os: macos-14
             cibw_python: cp314
             cibw_arch: "x86_64"
-          
+
+          - os: macos-15
+            cibw_python: cp39
+            cibw_arch: "x86_64"
+          - os: macos-15
+            cibw_python: cp310
+            cibw_arch: "x86_64"
+          - os: macos-15
+            cibw_python: cp311
+            cibw_arch: "x86_64"
+          - os: macos-15
+            cibw_python: cp312
+            cibw_arch: "x86_64"
+          - os: macos-15
+            cibw_python: cp313
+            cibw_arch: "x86_64"
+          - os: macos-15
+            cibw_python: cp314
+            cibw_arch: "x86_64"
+
           # Windows AMD64
           - os: windows-latest
             cibw_python: cp39
