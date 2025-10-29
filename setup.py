@@ -2,10 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import numpy
-from setuptools import Extension, setup
+from setuptools import Extension, setup, find_packages
 
 setup(
     include_dirs=["/usr/local/lib", numpy.get_include()],
+    package_dir={"": "src"},  # Tell setuptools packages are under src/
+    packages=find_packages(where="src"),  # Find packages in src/
     ext_modules=[
         Extension(
             "spectresc",
