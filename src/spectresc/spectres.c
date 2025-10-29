@@ -229,13 +229,13 @@ static PyMethodDef SpectresMethods[] = {
 // Define the module structure
 static struct PyModuleDef moduledef = {
     PyModuleDef_HEAD_INIT,
-    "spectresc",                                              // Submodule name
+    "spectresc", // Submodule name, it must match the Extension name in setup.py
     "Python extension module for the spectres function in C", // Module description
     -1,
     SpectresMethods};
 
 // Define the module initialization function
-PyMODINIT_FUNC PyInit_spectres(void)
+PyMODINIT_FUNC PyInit_spectresc(void)
 {
     import_array(); // Initialize NumPy
     return PyModule_Create(&moduledef);
