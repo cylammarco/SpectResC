@@ -34,7 +34,7 @@ jobs:
           python -m pip install --upgrade setuptools wheel
           python -m pip install --upgrade flake8 pytest pytest-cov coverage spectres
           python -m pip install --upgrade -r requirements.txt
-          python -m pip install -e src
+          python -m pip install -e .
     - name: Test with pytest
       run: |
         coverage run -m pytest --disable-warnings -p no:warnings test
