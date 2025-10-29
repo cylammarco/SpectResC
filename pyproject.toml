@@ -31,3 +31,4 @@ relative_files = true
 
 [project]
 license = {file = "LICENSE"}
+version = "1.1.0-dev0"
