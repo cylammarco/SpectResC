@@ -1,3 +1,3 @@
-from .spectres import spectres
+from .spectresc import spectres
 
 __all__ = ["spectres"]
