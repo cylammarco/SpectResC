@@ -14,7 +14,7 @@ else:
 
 setup(
     name="spectresc",
-    include_dirs=["/usr/local/lib", numpy.get_include()],
+    include_dirs=[numpy.get_include()],
     package_dir={"": "src"},  # Tell setuptools packages are under src/
     packages=find_packages(where="src"),  # Find packages in src/
     ext_modules=[
