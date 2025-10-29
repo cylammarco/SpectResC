@@ -235,7 +235,7 @@ static struct PyModuleDef spectresmodule = {
     SpectresMethods};
 
 // Define the module initialization function
-PyMODINIT_FUNC PyInit_spectresc(void)
+PyMODINIT_FUNC PyInit_spectres(void)
 {
     import_array(); // Initialize NumPy
     return PyModule_Create(&spectresmodule);
