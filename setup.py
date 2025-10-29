@@ -13,7 +13,7 @@ setup(
         Extension(
             "spectresc.spectres",
             sources=["src/spectresc/spectres.c"],
-            extra_compile_args=["-O3", "-fPIC", "-shared"],
+            extra_compile_args=["-O3", "-fPIC"],
         )
     ],
 )
